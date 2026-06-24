@@ -28,9 +28,11 @@ The data is generated at build time and baked into static HTML; all dashboards,
 heatmaps and detail pages work. CRUD/editing and the PT/EN switch are disabled
 in this read-only build (use Codespaces or local for the full app, in PT).
 
-**One-time setup:** repo **Settings → Pages → Source = GitHub Actions**. After
-that, the `.github/workflows/pages.yml` workflow republishes automatically.
-Build it locally with `npm run build:static` (output in `out/`).
+**One-time setup:** repo **Settings → Pages → Source = "Deploy from a branch" →
+Branch: `gh-pages` / `(root)`**. The `.github/workflows/pages.yml` workflow builds
+the static export and pushes it to the `gh-pages` branch on every push to `main`;
+GitHub Pages then publishes it automatically. Build locally with
+`npm run build:static` (output in `out/`).
 
 ## Run online (GitHub Codespaces)
 
