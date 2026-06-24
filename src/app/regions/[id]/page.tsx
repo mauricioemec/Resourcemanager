@@ -9,7 +9,12 @@ import { getKpis, getHeatmap, getTrend, getStaffingCurve } from "@/lib/queries";
 import { getT } from "@/lib/i18n/server";
 import { fmtHours, fmtFte, fmtPct } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+
+export const dynamicParams = process.env.STATIC !== "1";
+export async function generateStaticParams() {
+  const rows = await prisma.region.findMany({ select: { id: true } });
+  return rows.map((r) => ({ id: r.id }));
+}
 
 export default async function RegionDetail({ params }: { params: { id: string } }) {
   const t = getT();

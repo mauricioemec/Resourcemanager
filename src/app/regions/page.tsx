@@ -7,8 +7,8 @@ import { getRollup } from "@/lib/queries";
 import { getT } from "@/lib/i18n/server";
 import { fmtHours, fmtPct } from "@/lib/format";
 import { HOURS_PER_FTE_MONTH } from "@/lib/queries/facts";
+import { IS_STATIC } from "@/lib/static";
 
-export const dynamic = "force-dynamic";
 
 const fields: Field[] = [
   { name: "code", label: "Code", required: true },
@@ -31,7 +31,7 @@ export default async function RegionsPage() {
     <>
       <PageHeader
         title={t("nav.regions")}
-        action={<FormDialog title={t("nav.regions")} fields={fields} action={saveRegion} trigger="new" />}
+        action={IS_STATIC ? null : <FormDialog title={t("nav.regions")} fields={fields} action={saveRegion} trigger="new" />}
       />
       <Section>
         <table className="text-sm">
@@ -68,14 +68,18 @@ export default async function RegionsPage() {
                     {gapFte.toFixed(1)}
                   </td>
                   <td className="py-2.5 text-right space-x-3">
-                    <FormDialog
-                      title={r.name}
-                      fields={fields}
-                      action={saveRegion}
-                      values={{ id: r.id, code: r.code, name: r.name, country: r.country }}
-                      trigger="edit"
-                    />
-                    <DeleteButton action={deleteRegion} id={r.id} />
+                    {!IS_STATIC && (
+                      <>
+                        <FormDialog
+                          title={r.name}
+                          fields={fields}
+                          action={saveRegion}
+                          values={{ id: r.id, code: r.code, name: r.name, country: r.country }}
+                          trigger="edit"
+                        />
+                        <DeleteButton action={deleteRegion} id={r.id} />
+                      </>
+                    )}
                   </td>
                 </tr>
               );

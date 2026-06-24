@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT, useLocale, useLocaleSwitch } from "@/lib/i18n/provider";
+import { IS_STATIC } from "@/lib/static";
 
 const ITEMS = [
   { href: "/dashboard", key: "nav.dashboard", icon: "◎" },
@@ -42,7 +43,7 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="px-3 py-4 border-t border-border flex gap-1">
+      <div className={`px-3 py-4 border-t border-border flex gap-1 ${IS_STATIC ? "hidden" : ""}`}>
         {(["pt", "en"] as const).map((l) => (
           <button
             key={l}

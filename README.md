@@ -17,9 +17,24 @@ a **capacidade** disponível e a **alocação** real — e visualiza **gap** e
 - **Recharts** + a hand-rolled **Heatmap** (CSS grid) for dense matrices
 - **Tailwind CSS**
 
+## Live static demo (GitHub Pages)
+
+A read-only build is published to GitHub Pages on every push to `main` — a
+permanent public URL, no login, perfect to share:
+
+**https://mauricioemec.github.io/Resourcemanager/**
+
+The data is generated at build time and baked into static HTML; all dashboards,
+heatmaps and detail pages work. CRUD/editing and the PT/EN switch are disabled
+in this read-only build (use Codespaces or local for the full app, in PT).
+
+**One-time setup:** repo **Settings → Pages → Source = GitHub Actions**. After
+that, the `.github/workflows/pages.yml` workflow republishes automatically.
+Build it locally with `npm run build:static` (output in `out/`).
+
 ## Run online (GitHub Codespaces)
 
-The fastest way to try it — no local setup, shareable link:
+The fastest way to try the **full** app (CRUD + PT/EN) — no local setup, shareable link:
 
 1. On the repo page, click the green **`<> Code`** button → **Codespaces** → **Create codespace on main**.
 2. Wait for the automatic setup (`npm install` + seed + `npm run dev`). The web app opens on the forwarded **port 3000**.

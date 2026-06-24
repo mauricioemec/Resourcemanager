@@ -7,8 +7,8 @@ import { getRollup } from "@/lib/queries";
 import { getT } from "@/lib/i18n/server";
 import { fmtHours, fmtPct } from "@/lib/format";
 import { HOURS_PER_FTE_MONTH } from "@/lib/queries/facts";
+import { IS_STATIC } from "@/lib/static";
 
-export const dynamic = "force-dynamic";
 
 const fields: Field[] = [
   { name: "code", label: "Code", required: true },
@@ -32,7 +32,7 @@ export default async function DisciplinesPage() {
     <>
       <PageHeader
         title={t("nav.disciplines")}
-        action={<FormDialog title={t("nav.disciplines")} fields={fields} action={saveDiscipline} trigger="new" values={{ color: "#5b8def" }} />}
+        action={IS_STATIC ? null : <FormDialog title={t("nav.disciplines")} fields={fields} action={saveDiscipline} trigger="new" values={{ color: "#5b8def" }} />}
       />
       <Section>
         <table className="text-sm">
@@ -70,14 +70,18 @@ export default async function DisciplinesPage() {
                     {gapFte.toFixed(1)}
                   </td>
                   <td className="py-2.5 text-right space-x-3">
-                    <FormDialog
-                      title={d.name}
-                      fields={fields}
-                      action={saveDiscipline}
-                      values={{ id: d.id, code: d.code, name: d.name, color: d.color, sortOrder: d.sortOrder }}
-                      trigger="edit"
-                    />
-                    <DeleteButton action={deleteDiscipline} id={d.id} />
+                    {!IS_STATIC && (
+                      <>
+                        <FormDialog
+                          title={d.name}
+                          fields={fields}
+                          action={saveDiscipline}
+                          values={{ id: d.id, code: d.code, name: d.name, color: d.color, sortOrder: d.sortOrder }}
+                          trigger="edit"
+                        />
+                        <DeleteButton action={deleteDiscipline} id={d.id} />
+                      </>
+                    )}
                   </td>
                 </tr>
               );

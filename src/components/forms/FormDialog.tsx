@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useT } from "@/lib/i18n/provider";
+import { IS_STATIC } from "@/lib/static";
 
 export type Field = {
   name: string;
@@ -27,6 +28,8 @@ export function FormDialog({
 }) {
   const [open, setOpen] = useState(false);
   const t = useT();
+
+  if (IS_STATIC) return null; // read-only demo: no create/edit
 
   return (
     <>
@@ -101,6 +104,7 @@ export function FormDialog({
 
 export function DeleteButton({ action, id }: { action: (fd: FormData) => Promise<void>; id: string }) {
   const t = useT();
+  if (IS_STATIC) return null; // read-only demo: no delete
   return (
     <form action={action} className="inline">
       <input type="hidden" name="id" value={id} />

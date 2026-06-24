@@ -7,7 +7,6 @@ import { getT } from "@/lib/i18n/server";
 import { fmtFte, fmtHours, fmtPct, fmtNumber } from "@/lib/format";
 import { HOURS_PER_FTE_MONTH } from "@/lib/queries/facts";
 
-export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const t = getT();
