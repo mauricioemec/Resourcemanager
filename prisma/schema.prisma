@@ -1,0 +1,124 @@
+// Resource Management Platform — data model
+// Matrix + regional org. Time-phased facts stored as one row per month
+// (month = first-of-month DateTime + integer monthKey e.g. 202601).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Region {
+  id         String       @id @default(cuid())
+  code       String       @unique
+  name       String
+  country    String?
+  resources  Resource[]
+  projects   Project[]
+  capacities Capacity[]
+}
+
+model Discipline {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  color       String // hex, consistent chart coloring
+  sortOrder   Int          @default(0)
+  resources   Resource[]
+  demands     Demand[]
+  capacities  Capacity[]
+  allocations Allocation[]
+}
+
+model Project {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  regionId    String
+  region      Region       @relation(fields: [regionId], references: [id])
+  status      String // PIPELINE | ACTIVE | ON_HOLD | CLOSED
+  priority    Int          @default(3) // 1 (highest) .. 5
+  clientName  String?
+  startDate   DateTime
+  endDate     DateTime
+  budgetHours Float?
+  demands     Demand[]
+  allocations Allocation[]
+
+  @@index([regionId])
+  @@index([status])
+}
+
+model Resource {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  disciplineId String
+  discipline   Discipline   @relation(fields: [disciplineId], references: [id])
+  regionId     String
+  region       Region       @relation(fields: [regionId], references: [id])
+  grade        String // JUNIOR | MID | SENIOR | PRINCIPAL | LEAD
+  weeklyHours  Float        @default(40)
+  fteRatio     Float        @default(1.0)
+  costRate     Float?
+  active       Boolean      @default(true)
+  allocations  Allocation[]
+
+  @@index([disciplineId])
+  @@index([regionId])
+}
+
+model Demand {
+  id           String     @id @default(cuid())
+  projectId    String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  disciplineId String
+  discipline   Discipline @relation(fields: [disciplineId], references: [id])
+  month        DateTime
+  monthKey     Int
+  hours        Float
+  fte          Float
+
+  @@unique([projectId, disciplineId, monthKey])
+  @@index([monthKey])
+  @@index([disciplineId])
+}
+
+model Capacity {
+  id             String     @id @default(cuid())
+  regionId       String
+  region         Region     @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  disciplineId   String
+  discipline     Discipline @relation(fields: [disciplineId], references: [id])
+  month          DateTime
+  monthKey       Int
+  availableHours Float
+  headcount      Float
+
+  @@unique([regionId, disciplineId, monthKey])
+  @@index([monthKey])
+  @@index([disciplineId])
+}
+
+model Allocation {
+  id             String     @id @default(cuid())
+  resourceId     String
+  resource       Resource   @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  disciplineId   String
+  discipline     Discipline @relation(fields: [disciplineId], references: [id])
+  month          DateTime
+  monthKey       Int
+  allocatedHours Float
+  allocationPct  Float
+  billable       Boolean    @default(true)
+
+  @@unique([resourceId, projectId, disciplineId, monthKey])
+  @@index([monthKey])
+  @@index([projectId])
+  @@index([disciplineId])
+}
