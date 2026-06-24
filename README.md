@@ -17,7 +17,17 @@ a **capacidade** disponível e a **alocação** real — e visualiza **gap** e
 - **Recharts** + a hand-rolled **Heatmap** (CSS grid) for dense matrices
 - **Tailwind CSS**
 
-## Quick start
+## Run online (GitHub Codespaces)
+
+The fastest way to try it — no local setup, shareable link:
+
+1. On the repo page, click the green **`<> Code`** button → **Codespaces** → **Create codespace on main**.
+2. Wait for the automatic setup (`npm install` + seed + `npm run dev`). The web app opens on the forwarded **port 3000**.
+3. To share with others, open the **Ports** tab, right-click port 3000 → **Port Visibility → Public**, then copy the `…-3000.app.github.dev` URL.
+
+The `.devcontainer/` config handles install, seeding and starting the dev server automatically.
+
+## Quick start (local)
 
 ```bash
 npm install
