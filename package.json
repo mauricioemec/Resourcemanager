@@ -10,7 +10,8 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "rm -f prisma/dev.db && prisma db push && tsx prisma/seed.ts"
+    "db:reset": "rm -f prisma/dev.db && prisma db push && tsx prisma/seed.ts",
+    "build:static": "STATIC=1 NEXT_PUBLIC_STATIC=1 prisma generate && STATIC=1 NEXT_PUBLIC_STATIC=1 next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

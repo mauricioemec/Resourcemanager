@@ -8,7 +8,12 @@ import { getT } from "@/lib/i18n/server";
 import { fmtPct, fmtHours } from "@/lib/format";
 import { horizonKeys } from "@/lib/months";
 
-export const dynamic = "force-dynamic";
+
+export const dynamicParams = process.env.STATIC !== "1";
+export async function generateStaticParams() {
+  const rows = await prisma.resource.findMany({ select: { id: true } });
+  return rows.map((r) => ({ id: r.id }));
+}
 
 export default async function ResourceDetail({ params }: { params: { id: string } }) {
   const t = getT();

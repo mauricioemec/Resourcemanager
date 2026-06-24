@@ -6,8 +6,8 @@ import { saveResource, deleteResource } from "@/actions/crud";
 import { getT } from "@/lib/i18n/server";
 import { fmtPct } from "@/lib/format";
 import { HORIZON_MONTHS } from "@/lib/months";
+import { IS_STATIC } from "@/lib/static";
 
-export const dynamic = "force-dynamic";
 
 const GRADES = ["JUNIOR", "MID", "SENIOR", "PRINCIPAL", "LEAD"];
 
@@ -17,14 +17,17 @@ export default async function ResourcesPage({
   searchParams: { region?: string; discipline?: string };
 }) {
   const t = getT();
+  // Static export has no request query string; ignore filters.
+  const regionFilter = IS_STATIC ? undefined : searchParams.region;
+  const disciplineFilter = IS_STATIC ? undefined : searchParams.discipline;
   const [regions, disciplines] = await Promise.all([
     prisma.region.findMany({ orderBy: { name: "asc" } }),
     prisma.discipline.findMany({ orderBy: { sortOrder: "asc" } }),
   ]);
   const resources = await prisma.resource.findMany({
     where: {
-      regionId: searchParams.region || undefined,
-      disciplineId: searchParams.discipline || undefined,
+      regionId: regionFilter || undefined,
+      disciplineId: disciplineFilter || undefined,
     },
     include: { region: true, discipline: true },
     orderBy: { name: "asc" },
@@ -55,19 +58,21 @@ export default async function ResourcesPage({
       <PageHeader
         title={t("nav.resources")}
         subtitle={`${resources.length}`}
-        action={<FormDialog title={t("nav.resources")} fields={fields} action={saveResource} trigger="new" values={{ grade: "MID", weeklyHours: 40, fteRatio: 1, active: true }} />}
+        action={IS_STATIC ? null : <FormDialog title={t("nav.resources")} fields={fields} action={saveResource} trigger="new" values={{ grade: "MID", weeklyHours: 40, fteRatio: 1, active: true }} />}
       />
 
-      <div className="flex gap-2 mb-4 text-sm flex-wrap">
-        <FilterLink label={t("common.all")} active={!searchParams.region && !searchParams.discipline} href="/resources" />
-        {regions.map((r) => (
-          <FilterLink key={r.id} label={r.code} active={searchParams.region === r.id} href={`/resources?region=${r.id}`} />
-        ))}
-        <span className="w-px bg-border mx-1" />
-        {disciplines.map((d) => (
-          <FilterLink key={d.id} label={d.code} active={searchParams.discipline === d.id} href={`/resources?discipline=${d.id}`} />
-        ))}
-      </div>
+      {!IS_STATIC && (
+        <div className="flex gap-2 mb-4 text-sm flex-wrap">
+          <FilterLink label={t("common.all")} active={!regionFilter && !disciplineFilter} href="/resources" />
+          {regions.map((r) => (
+            <FilterLink key={r.id} label={r.code} active={regionFilter === r.id} href={`/resources?region=${r.id}`} />
+          ))}
+          <span className="w-px bg-border mx-1" />
+          {disciplines.map((d) => (
+            <FilterLink key={d.id} label={d.code} active={disciplineFilter === d.id} href={`/resources?discipline=${d.id}`} />
+          ))}
+        </div>
+      )}
 
       <Section>
         <table className="text-sm">
@@ -98,14 +103,18 @@ export default async function ResourcesPage({
                   <td className="py-2.5 text-muted">{r.grade}</td>
                   <td className={`py-2.5 text-right ${util > 1 ? "text-bad" : util > 0.85 ? "text-warn" : "text-good"}`}>{fmtPct(util)}</td>
                   <td className="py-2.5 text-right space-x-3">
-                    <FormDialog
-                      title={r.name}
-                      fields={fields}
-                      action={saveResource}
-                      values={{ id: r.id, name: r.name, email: r.email, disciplineId: r.disciplineId, regionId: r.regionId, grade: r.grade, weeklyHours: r.weeklyHours, fteRatio: r.fteRatio, costRate: r.costRate, active: r.active }}
-                      trigger="edit"
-                    />
-                    <DeleteButton action={deleteResource} id={r.id} />
+                    {!IS_STATIC && (
+                      <>
+                        <FormDialog
+                          title={r.name}
+                          fields={fields}
+                          action={saveResource}
+                          values={{ id: r.id, name: r.name, email: r.email, disciplineId: r.disciplineId, regionId: r.regionId, grade: r.grade, weeklyHours: r.weeklyHours, fteRatio: r.fteRatio, costRate: r.costRate, active: r.active }}
+                          trigger="edit"
+                        />
+                        <DeleteButton action={deleteResource} id={r.id} />
+                      </>
+                    )}
                   </td>
                 </tr>
               );

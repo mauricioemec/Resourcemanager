@@ -4,8 +4,8 @@ import { PageHeader, Section } from "@/components/ui/PageHeader";
 import { FormDialog, DeleteButton, type Field } from "@/components/forms/FormDialog";
 import { saveProject, deleteProject } from "@/actions/crud";
 import { getT } from "@/lib/i18n/server";
+import { IS_STATIC } from "@/lib/static";
 
-export const dynamic = "force-dynamic";
 
 const STATUS = ["PIPELINE", "ACTIVE", "ON_HOLD", "CLOSED"];
 
@@ -25,11 +25,14 @@ export default async function ProjectsPage({
   searchParams: { region?: string; status?: string };
 }) {
   const t = getT();
+  // Static export has no request query string; ignore filters.
+  const regionFilter = IS_STATIC ? undefined : searchParams.region;
+  const statusFilter = IS_STATIC ? undefined : searchParams.status;
   const regions = await prisma.region.findMany({ orderBy: { name: "asc" } });
   const projects = await prisma.project.findMany({
     where: {
-      regionId: searchParams.region || undefined,
-      status: searchParams.status || undefined,
+      regionId: regionFilter || undefined,
+      status: statusFilter || undefined,
     },
     include: { region: true, _count: { select: { demands: true } } },
     orderBy: [{ priority: "asc" }, { name: "asc" }],
@@ -50,19 +53,21 @@ export default async function ProjectsPage({
     <>
       <PageHeader
         title={t("nav.projects")}
-        action={<FormDialog title={t("nav.projects")} fields={fields} action={saveProject} trigger="new" values={{ status: "ACTIVE", priority: 3 }} />}
+        action={IS_STATIC ? null : <FormDialog title={t("nav.projects")} fields={fields} action={saveProject} trigger="new" values={{ status: "ACTIVE", priority: 3 }} />}
       />
 
-      <div className="flex gap-2 mb-4 text-sm flex-wrap">
-        <FilterLink label={t("common.all")} active={!searchParams.region && !searchParams.status} href="/projects" />
-        {regions.map((r) => (
-          <FilterLink key={r.id} label={r.code} active={searchParams.region === r.id} href={`/projects?region=${r.id}`} />
-        ))}
-        <span className="w-px bg-border mx-1" />
-        {STATUS.map((s) => (
-          <FilterLink key={s} label={t(`status.${s}`)} active={searchParams.status === s} href={`/projects?status=${s}`} />
-        ))}
-      </div>
+      {!IS_STATIC && (
+        <div className="flex gap-2 mb-4 text-sm flex-wrap">
+          <FilterLink label={t("common.all")} active={!regionFilter && !statusFilter} href="/projects" />
+          {regions.map((r) => (
+            <FilterLink key={r.id} label={r.code} active={regionFilter === r.id} href={`/projects?region=${r.id}`} />
+          ))}
+          <span className="w-px bg-border mx-1" />
+          {STATUS.map((s) => (
+            <FilterLink key={s} label={t(`status.${s}`)} active={statusFilter === s} href={`/projects?status=${s}`} />
+          ))}
+        </div>
+      )}
 
       <Section>
         <table className="text-sm">
@@ -91,24 +96,28 @@ export default async function ProjectsPage({
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusTone(p.status)}`}>{t(`status.${p.status}`)}</span>
                 </td>
                 <td className="py-2.5 text-right space-x-3">
-                  <FormDialog
-                    title={p.name}
-                    fields={fields}
-                    action={saveProject}
-                    values={{
-                      id: p.id,
-                      code: p.code,
-                      name: p.name,
-                      regionId: p.regionId,
-                      status: p.status,
-                      priority: p.priority,
-                      clientName: p.clientName,
-                      startDate: p.startDate.toISOString().slice(0, 10),
-                      endDate: p.endDate.toISOString().slice(0, 10),
-                    }}
-                    trigger="edit"
-                  />
-                  <DeleteButton action={deleteProject} id={p.id} />
+                  {!IS_STATIC && (
+                    <>
+                      <FormDialog
+                        title={p.name}
+                        fields={fields}
+                        action={saveProject}
+                        values={{
+                          id: p.id,
+                          code: p.code,
+                          name: p.name,
+                          regionId: p.regionId,
+                          status: p.status,
+                          priority: p.priority,
+                          clientName: p.clientName,
+                          startDate: p.startDate.toISOString().slice(0, 10),
+                          endDate: p.endDate.toISOString().slice(0, 10),
+                        }}
+                        trigger="edit"
+                      />
+                      <DeleteButton action={deleteProject} id={p.id} />
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

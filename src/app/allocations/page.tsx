@@ -4,8 +4,8 @@ import { PageHeader, Section } from "@/components/ui/PageHeader";
 import { DemandGrid } from "@/components/forms/DemandGrid";
 import { getT } from "@/lib/i18n/server";
 import { horizonKeys } from "@/lib/months";
+import { IS_STATIC } from "@/lib/static";
 
-export const dynamic = "force-dynamic";
 
 export default async function AllocationsPage({
   searchParams,
@@ -18,7 +18,8 @@ export default async function AllocationsPage({
     orderBy: [{ priority: "asc" }, { name: "asc" }],
     include: { region: true },
   });
-  const selectedId = searchParams.project || projects[0]?.id;
+  // Static export has no request query string; default to the top project.
+  const selectedId = (IS_STATIC ? undefined : searchParams.project) || projects[0]?.id;
   const project = projects.find((p) => p.id === selectedId) ?? projects[0];
 
   const disciplines = await prisma.discipline.findMany({ orderBy: { sortOrder: "asc" } });
@@ -48,7 +49,7 @@ export default async function AllocationsPage({
           {projects.slice(0, 20).map((p) => (
             <Link
               key={p.id}
-              href={`/allocations?project=${p.id}`}
+              href={IS_STATIC ? `/projects/${p.id}` : `/allocations?project=${p.id}`}
               className={`px-2.5 py-1 rounded-md text-xs font-medium ${p.id === project?.id ? "bg-brand text-white" : "bg-surface-2 text-muted hover:text-text"}`}
             >
               {p.code}

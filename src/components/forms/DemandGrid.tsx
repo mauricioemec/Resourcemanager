@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useT } from "@/lib/i18n/provider";
 import { upsertDemand } from "@/actions/demand";
+import { IS_STATIC } from "@/lib/static";
 
 type Cell = { disciplineId: string; monthKey: number; hours: number };
 
@@ -49,13 +50,17 @@ export function DemandGrid({
     <div>
       <div className="flex justify-between items-center mb-3">
         <p className="text-xs text-muted">{t("alloc.modeDemand")} — {t("unit.hours")}</p>
-        <button
-          onClick={save}
-          disabled={pending}
-          className="bg-brand hover:bg-brand/80 disabled:opacity-50 text-white text-sm font-medium px-4 py-1.5 rounded-lg"
-        >
-          {pending ? t("common.loading") : saved ? "✓ " + t("action.save") : t("action.save")}
-        </button>
+        {IS_STATIC ? (
+          <span className="text-xs text-muted italic">demo · read-only / somente leitura</span>
+        ) : (
+          <button
+            onClick={save}
+            disabled={pending}
+            className="bg-brand hover:bg-brand/80 disabled:opacity-50 text-white text-sm font-medium px-4 py-1.5 rounded-lg"
+          >
+            {pending ? t("common.loading") : saved ? "✓ " + t("action.save") : t("action.save")}
+          </button>
+        )}
       </div>
       <div className="overflow-x-auto scrollbar-thin">
         <table className="text-xs border-separate" style={{ borderSpacing: 2 }}>
@@ -82,6 +87,7 @@ export function DemandGrid({
                         type="number"
                         min={0}
                         value={v || ""}
+                        readOnly={IS_STATIC}
                         onChange={(e) => set(d.id, m.key, e.target.value)}
                         className={`w-11 text-center rounded py-1 border ${v > 0 ? "bg-surface-2 border-border text-text" : "bg-transparent border-border/40 text-muted"}`}
                       />
